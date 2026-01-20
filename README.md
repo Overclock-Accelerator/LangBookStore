@@ -2,6 +2,10 @@
 
 RightBookAI is a small Python codebase that answers questions about a local bookstore inventory (`storedata.json`), recommends books, and builds budget-friendly book bundles.
 
+## Demo
+
+![RightBookAI / LangBookStore Demo](BookstoreGIF.gif)
+
 ## What's in this repo
 
 - **Inventory**: `storedata.json` (the book catalog)
