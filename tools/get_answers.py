@@ -10,35 +10,24 @@ Note:
 
 from __future__ import annotations
 
-import json
 import re
 from dataclasses import dataclass
-from functools import lru_cache
-from pathlib import Path
 from typing import Any
 
 from langchain.tools import tool
 
+from tools.storedata_utils import BookView as _SharedBookView
+from tools.storedata_utils import book_view as _shared_book_view
+from tools.storedata_utils import fmt_money as _shared_fmt_money
+from tools.storedata_utils import load_store_books as _load_store_books
+from tools.storedata_utils import norm as _norm_shared
 
-def _project_root() -> Path:
-    return Path(__file__).resolve().parents[1]
-
-
-@lru_cache(maxsize=1)
 def _load_storedata() -> list[dict[str, Any]]:
-    path = _project_root() / "storedata.json"
-    data = json.loads(path.read_text(encoding="utf-8"))
-    books = data.get("books", [])
-    if not isinstance(books, list):
-        return []
-    return [b for b in books if isinstance(b, dict)]
-
-
-_NON_ALNUM_RE = re.compile(r"[^a-z0-9]+")
+    return _load_store_books()
 
 
 def _norm(s: str) -> str:
-    return _NON_ALNUM_RE.sub(" ", s.lower()).strip()
+    return _norm_shared(s)
 
 
 def _find_books_by_title(user_query: str) -> list[dict[str, Any]]:
@@ -156,10 +145,7 @@ def _extract_requested_fields(user_query: str) -> set[str]:
 
 
 def _fmt_money(value: Any) -> str | None:
-    try:
-        return f"${float(value):.2f}"
-    except Exception:
-        return None
+    return _shared_fmt_money(value)
 
 
 @dataclass(frozen=True)
@@ -179,31 +165,21 @@ class _BookView:
 
 
 def _book_view(book: dict[str, Any]) -> _BookView:
-    def _to_int(x: Any) -> int | None:
-        try:
-            return int(x)
-        except Exception:
-            return None
-
-    def _to_float(x: Any) -> float | None:
-        try:
-            return float(x)
-        except Exception:
-            return None
-
+    # Keep this tool's view stable, but source parsing from shared helper.
+    sb: _SharedBookView = _shared_book_view(book)
     return _BookView(
-        title=str(book.get("title", "")).strip(),
-        author=str(book.get("author", "")).strip(),
-        genre=str(book.get("genre", "")).strip(),
-        rating=_to_float(book.get("rating")),
-        pages=_to_int(book.get("pages")),
-        price=_to_float(book.get("price")),
-        year=_to_int(book.get("year")),
-        description=str(book.get("description", "")).strip(),
-        review_count=_to_int(book.get("reviewCount")),
-        on_sale=bool(book.get("onSale", False)),
-        sale_price=_to_float(book.get("salePrice")),
-        discount_percent=_to_int(book.get("discountPercent")),
+        title=sb.title,
+        author=sb.author,
+        genre=sb.genre,
+        rating=sb.rating,
+        pages=sb.pages,
+        price=sb.price,
+        year=sb.year,
+        description=sb.description,
+        review_count=sb.review_count,
+        on_sale=sb.on_sale,
+        sale_price=sb.sale_price,
+        discount_percent=sb.discount_percent,
     )
 
 
