@@ -666,8 +666,7 @@ def recommend_books(user_request: str) -> str:
     if len(strict_matches) >= prefs.count:
         candidate_books = strict_matches
     else:
-        # Fallback strategy: if we don't have enough strict matches, we keep the strongest signal
-        # (genre, if mentioned) and relax other constraints first.
+        # Fallback strategy: if strict matches are insufficient, anchor on genre when provided.
         if prefs.genres:
             genre_anchor = [b for b in books if any(_genre_match(b, g) for g in prefs.genres)]
             candidate_books = genre_anchor if genre_anchor else books

@@ -247,7 +247,8 @@ def _solve_bundle_max_books(
     genre_to_bit = {g: (1 << i) for i, g in enumerate(required_genres)}
     full_mask = (1 << len(required_genres)) - 1
 
-    items: list[tuple[int, int, BookView]] = []  # (price_cents, mask, book)
+    # Candidate items for knapsack: (price_cents, required_genre_mask, book).
+    items: list[tuple[int, int, BookView]] = []
     for b in candidates:
         pc = _price_cents(b)
         if pc is None or pc <= 0 or pc > budget_cents:

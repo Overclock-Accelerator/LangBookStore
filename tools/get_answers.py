@@ -225,8 +225,7 @@ def _compose_response(user_query: str, b: _BookView) -> str:
             return f"{b.title} is {b.discount_percent}% off."
         return f"I don't have a discount listed for {b.title}."
 
-    # If the user asked for exactly one concrete attribute, answer it directly
-    # (avoid leading with stock/description unless asked).
+    # If the user asked for exactly one attribute, answer it directly.
     if len(requested) == 1:
         only = next(iter(requested))
         if only == "pages":
